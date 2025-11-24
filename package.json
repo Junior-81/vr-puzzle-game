@@ -1,0 +1,25 @@
+{
+  "name": "vr-puzzle-game",
+  "version": "1.0.0",
+  "description": "Projeto de um quebra‑cabeça 3D interativo em realidade aumentada/virtual (A‑Frame) que gera peças com lados que se encaixam, embaralha, permite selecionar e mover as peças, valida encaixes e verifica a conclusão do jogo.",
+  "main": "script.js",
+  "scripts": {
+    "start": "live-server --port=8080",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eduardosdl/vr-puzzle-game.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/eduardosdl/vr-puzzle-game/issues"
+  },
+  "homepage": "https://github.com/eduardosdl/vr-puzzle-game#readme",
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  }
+}

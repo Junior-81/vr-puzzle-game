@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+
+    <title>Pointer</title>
+  </head>
+  <body>
+    <a-scene id="scene">
+      <a-sky color="#ECECEC"></a-sky>
+
+      <a-entity
+        cubo-peca="top:1;left:2;bottom:0;right:2"
+        position="-4.5 0.5 -4"
+        rotation="0 45 0"
+        shadow="cast:true;receive:true"
+      ></a-entity>
+      <a-entity
+        cubo-peca="top:1;left:1;bottom:2;right:1"
+        position="-2.5 0.5 -5"
+        shadow="cast:true;receive:true"
+      ></a-entity>
+      <a-entity
+        cubo-peca="top:2;left:0;bottom:1;right:2"
+        position="-0.5 0.5 -5"
+        shadow="cast:true;receive:true"
+      ></a-entity>
+      <a-entity
+        cubo-peca="top:1;left:1;bottom:1;right:1"
+        position="1.5 0.5 -5"
+        shadow="cast:true;receive:true"
+      ></a-entity>
+      <a-entity
+        cubo-peca="top:2;left:2;bottom:2;right:2"
+        position="3.5 0.5 -4"
+        rotation="0 -45 0"
+        shadow="cast:true;receive:true"
+      ></a-entity>
+
+      <a-entity camera wasd-controls look-controls position="0 1.6 0">
+        <a-entity
+          cursor-ring
+          raycaster="objects: .clickable"
+          id="cursor"
+          geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03;"
+          cursor="fuse: true; fuseTimeout: 1000"
+          material="color: black; shader: flat"
+          position="0 0 -1"
+        >
+        </a-entity>
+      </a-entity>
+    </a-scene>
+  </body>
+  <script src="./script.js"></script>
+</html>

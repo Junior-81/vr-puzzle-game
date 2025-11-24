@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+
+    <title>Pointer</title>
+  </head>
+  <body>
+    <a-scene id="scene">
+      <a-sky color="#ECECEC"></a-sky>
+
+      <a-plane
+        rotation="-90 0 0"
+        width="10"
+        height="10"
+        color="#c2c2c2"
+        position="0 0 -5"
+        shadow="receive: true"
+      ></a-plane>
+
+      <a-box
+        component="box1"
+        position="-1 1 -3"
+        rotation="0 45 0"
+        color="#4CC3D9"
+        class="clickable"
+      ></a-box>
+      <a-box
+        component="box2"
+        position="2 1 -3"
+        rotation="0 -45 0"
+        color="#00f"
+        class="clickable"
+      ></a-box>
+
+      <a-entity
+        line-event
+        id="line"
+        line="start: 0 0 0; end: 0 0 0; color: red"
+        transparent="true"
+      ></a-entity>
+
+      <a-entity camera wasd-controls look-controls position="0 1.6 0">
+        <a-entity
+          cursor-ring
+          raycaster="objects: .clickable"
+          id="cursor"
+          geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03;"
+          cursor="fuse: true; fuseTimeout: 1000"
+          material="color: black; shader: flat"
+          position="0 0 -1"
+        >
+        </a-entity>
+      </a-entity>
+    </a-scene>
+  </body>
+  <script src="select-line.js"></script>
+</html>
