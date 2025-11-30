@@ -51,6 +51,26 @@
         background: #e68900;
       }
 
+      #puzzle-menu button.rank {
+        background: #2196f3;
+      }
+
+      #puzzle-menu button.rank:hover {
+        background: #0b7dda;
+      }
+
+      #timer-display {
+        margin-top: 10px;
+        padding: 12px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 8px;
+        font-size: 20px;
+        color: white;
+        text-align: center;
+        font-weight: bold;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      }
+
       #current-puzzle {
         margin-top: 10px;
         padding: 8px;
@@ -93,6 +113,191 @@
         border: 1px solid #ccc;
         font-family: monospace;
       }
+
+      /* Modal de conclusão */
+      #completion-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 2000;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #completion-modal.show {
+        display: flex;
+      }
+
+      .modal-content {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        text-align: center;
+        max-width: 400px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      }
+
+      .modal-content h2 {
+        color: #4caf50;
+        margin: 0 0 10px 0;
+      }
+
+      .modal-content p {
+        font-size: 18px;
+        margin: 15px 0;
+      }
+
+      .modal-content input {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+        box-sizing: border-box;
+      }
+
+      .modal-content button {
+        padding: 12px 30px;
+        margin: 5px;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+
+      .modal-content button.submit {
+        background: #4caf50;
+        color: white;
+      }
+
+      .modal-content button.submit:hover {
+        background: #45a049;
+      }
+
+      /* Modal de ranking */
+      #ranking-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 2000;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #ranking-modal.show {
+        display: flex;
+      }
+
+      .ranking-content {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        max-width: 500px;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      }
+
+      .ranking-content h2 {
+        color: #2196f3;
+        margin: 0 0 20px 0;
+        text-align: center;
+      }
+
+      .ranking-tabs {
+        display: flex;
+        margin-bottom: 15px;
+        border-bottom: 2px solid #ddd;
+      }
+
+      .ranking-tabs button {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-size: 14px;
+        color: #666;
+        transition: all 0.3s;
+      }
+
+      .ranking-tabs button.active {
+        color: #2196f3;
+        border-bottom: 3px solid #2196f3;
+        font-weight: bold;
+      }
+
+      .ranking-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .ranking-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px;
+        margin: 8px 0;
+        background: #f5f5f5;
+        border-radius: 8px;
+        align-items: center;
+      }
+
+      .ranking-item.top-1 {
+        background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+      }
+
+      .ranking-item.top-2 {
+        background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%);
+      }
+
+      .ranking-item.top-3 {
+        background: linear-gradient(135deg, #cd7f32 0%, #daa06d 100%);
+      }
+
+      .ranking-position {
+        font-weight: bold;
+        font-size: 18px;
+        color: #333;
+        margin-right: 10px;
+      }
+
+      .ranking-name {
+        flex: 1;
+        font-size: 16px;
+        color: #333;
+      }
+
+      .ranking-time {
+        font-weight: bold;
+        color: #2196f3;
+      }
+
+      .close-ranking {
+        display: block;
+        margin: 20px auto 0;
+        padding: 10px 30px;
+        border: none;
+        border-radius: 5px;
+        background: #ff5252;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+      }
+
+      .close-ranking:hover {
+        background: #ff1744;
+      }
     </style>
   </head>
   <body>
@@ -103,6 +308,8 @@
       <button onclick="selectPuzzle(1)">Puzzle 2</button>
       <button onclick="selectPuzzle(2)">Puzzle 3</button>
       <button class="reset" onclick="resetPuzzle()">🔄 Resetar</button>
+      <button class="rank" onclick="showRanking()">🏆 Ranking</button>
+      <div id="timer-display">⏱️ 00:00</div>
       <div id="user-code-display" style="margin-top: 10px; padding: 8px; background: #fff3cd; border-radius: 5px; font-size: 11px; color: #856404;">
         <strong>👤 User:</strong> <span id="code-value">Carregando...</span>
       </div>
@@ -119,6 +326,36 @@
           >Mantenha <kbd>R</kbd> pressionado enquanto seleciona uma peça</small
         >
       </p>
+    </div>
+
+    <!-- Modal de conclusão -->
+    <div id="completion-modal">
+      <div class="modal-content">
+        <h2>🎉 Parabéns!</h2>
+        <p>Você completou o puzzle em:</p>
+        <p style="font-size: 28px; color: #4caf50; font-weight: bold;" id="final-time">00:00</p>
+        <input type="text" id="player-name" placeholder="Digite seu nome" maxlength="20">
+        <div>
+          <button class="submit" onclick="submitScore()">💾 Salvar Ranking</button>
+          <button onclick="closeModal()">❌ Fechar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de ranking -->
+    <div id="ranking-modal">
+      <div class="ranking-content">
+        <h2>🏆 Ranking de Jogadores</h2>
+        <div class="ranking-tabs">
+          <button class="active" onclick="showRankingTab(0)">Puzzle 1</button>
+          <button onclick="showRankingTab(1)">Puzzle 2</button>
+          <button onclick="showRankingTab(2)">Puzzle 3</button>
+        </div>
+        <ul class="ranking-list" id="ranking-list">
+          <!-- Será preenchido dinamicamente -->
+        </ul>
+        <button class="close-ranking" onclick="closeRanking()">Fechar</button>
+      </div>
     </div>
 
     <a-scene id="scene">
@@ -183,20 +420,6 @@
       </a-entity>
     </a-scene>
 
-    <script>
-      // Definir imagens disponíveis
-      const availableImages = [
-        "images/puzzle1.jpg",
-        "images/puzzle2.jpeg",
-        "images/puzzle3.jpg",
-      ];
-
-      // Função para selecionar puzzle
-      function selectPuzzle(index) {
-        loadPuzzleTexture(availableImages[index]);
-        resetPuzzle();
-      }
-    </script>
+    <script src="script.js"></script>
   </body>
-  <script src="script.js"></script>
 </html>

@@ -133,6 +133,180 @@ function updateUserCodeDisplay() {
 // Variável global para pontuação
 let pontos = 0;
 
+// ========== SISTEMA DE TIMER E RANKING ==========
+let timerStarted = false;
+let startTime = 0;
+let timerInterval = null;
+let currentPuzzleIndex = 0;
+
+/**
+ * Formata segundos em MM:SS
+ * @param {number} seconds - Segundos a formatar
+ * @returns {string} - Tempo formatado
+ */
+function formatTime(seconds) {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+/**
+ * Inicia o timer quando o usuário faz a primeira jogada
+ */
+function startTimer() {
+  if (!timerStarted) {
+    timerStarted = true;
+    startTime = Date.now();
+    timerInterval = setInterval(updateTimer, 1000);
+    console.log('⏱️ Timer iniciado!');
+  }
+}
+
+/**
+ * Atualiza o display do timer
+ */
+function updateTimer() {
+  const elapsed = Math.floor((Date.now() - startTime) / 1000);
+  document.getElementById('timer-display').textContent = '⏱️ ' + formatTime(elapsed);
+}
+
+/**
+ * Para o timer e retorna o tempo final
+ * @returns {number} - Tempo decorrido em segundos
+ */
+function stopTimer() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  return Math.floor((Date.now() - startTime) / 1000);
+}
+
+/**
+ * Reseta o timer para 00:00
+ */
+function resetTimer() {
+  stopTimer();
+  timerStarted = false;
+  startTime = 0;
+  document.getElementById('timer-display').textContent = '⏱️ 00:00';
+}
+
+/**
+ * Chamado quando o puzzle é completado
+ */
+function onPuzzleComplete() {
+  const finalTime = stopTimer();
+  document.getElementById('final-time').textContent = formatTime(finalTime);
+  document.getElementById('completion-modal').classList.add('show');
+  console.log('🎉 Puzzle completo em ' + formatTime(finalTime));
+}
+
+/**
+ * Salva a pontuação do usuário no ranking local
+ */
+function submitScore() {
+  const playerName = document.getElementById('player-name').value.trim();
+  if (!playerName) {
+    alert('Por favor, digite seu nome!');
+    return;
+  }
+
+  const finalTime = Math.floor((Date.now() - startTime) / 1000);
+  const score = {
+    name: playerName,
+    time: finalTime,
+    date: new Date().toISOString(),
+    puzzleIndex: currentPuzzleIndex
+  };
+
+  // Salvar no localStorage
+  const rankingKey = `puzzle_ranking_${currentPuzzleIndex}`;
+  let rankings = JSON.parse(localStorage.getItem(rankingKey) || '[]');
+  rankings.push(score);
+  rankings.sort((a, b) => a.time - b.time); // Ordena por tempo crescente
+  rankings = rankings.slice(0, 10); // Mantém apenas top 10
+  localStorage.setItem(rankingKey, JSON.stringify(rankings));
+
+  console.log('💾 Pontuação salva:', score);
+  
+  closeModal();
+  showRanking();
+  
+  // Também salvar na API externa
+  saveScores();
+}
+
+/**
+ * Fecha o modal de conclusão
+ */
+function closeModal() {
+  document.getElementById('completion-modal').classList.remove('show');
+  document.getElementById('player-name').value = '';
+}
+
+/**
+ * Mostra o modal de ranking
+ */
+function showRanking() {
+  document.getElementById('ranking-modal').classList.add('show');
+  showRankingTab(currentPuzzleIndex);
+}
+
+/**
+ * Fecha o modal de ranking
+ */
+function closeRanking() {
+  document.getElementById('ranking-modal').classList.remove('show');
+}
+
+/**
+ * Mostra uma aba específica do ranking
+ * @param {number} puzzleIndex - Índice do puzzle (0, 1 ou 2)
+ */
+function showRankingTab(puzzleIndex) {
+  // Atualizar tabs ativos
+  const tabs = document.querySelectorAll('.ranking-tabs button');
+  tabs.forEach((tab, index) => {
+    tab.classList.toggle('active', index === puzzleIndex);
+  });
+
+  // Carregar ranking do localStorage
+  const rankingKey = `puzzle_ranking_${puzzleIndex}`;
+  const rankings = JSON.parse(localStorage.getItem(rankingKey) || '[]');
+  const rankingList = document.getElementById('ranking-list');
+  
+  if (rankings.length === 0) {
+    rankingList.innerHTML = '<li style="text-align: center; padding: 20px; color: #999;">Nenhum registro ainda</li>';
+    return;
+  }
+
+  rankingList.innerHTML = rankings.map((score, index) => {
+    const topClass = index === 0 ? 'top-1' : index === 1 ? 'top-2' : index === 2 ? 'top-3' : '';
+    const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
+    return `
+      <li class="ranking-item ${topClass}">
+        <span class="ranking-position">${medal} ${index + 1}º</span>
+        <span class="ranking-name">${score.name}</span>
+        <span class="ranking-time">${formatTime(score.time)}</span>
+      </li>
+    `;
+  }).join('');
+}
+
+/**
+ * Seleciona um puzzle específico
+ * @param {number} index - Índice do puzzle
+ */
+function selectPuzzle(index) {
+  currentPuzzleIndex = index;
+  loadPuzzleTexture(availableImages[index]);
+  resetPuzzle();
+  resetTimer();
+}
+
+// ========== FIM DO SISTEMA DE TIMER E RANKING ==========
+
 /**
  * Salva a pontuação do usuário no sistema de rank
  * Segue o padrão da API do exemplo fornecido
@@ -239,6 +413,11 @@ const heightInitGlobal = 1;
 const widthInitGlobal = -1.5;
 
 //Configuração de imagens do puzzle
+const availableImages = [
+  "images/puzzle1.jpg",
+  "images/puzzle2.jpeg",
+  "images/puzzle3.jpg",
+];
 let currentPuzzle = "puzzle1";
 let currentLevel = 1;
 let currentTexture = null;
@@ -989,6 +1168,9 @@ function checkPuzzleCompletion() {
  * @returns {void}
  */
 function movePieceToPosition(pieceElement, skeletonPosition, skeletonName) {
+  // Iniciar o timer na primeira jogada
+  startTimer();
+  
   const skeleton = skeletonName.split("-");
   const skeletonType = skeleton[0];
   const mountedArrayIndex = skeleton[1] - 1;
@@ -1070,8 +1252,8 @@ function movePieceToPosition(pieceElement, skeletonPosition, skeletonName) {
       pontos = totalPieces * 100;
       console.log("🏆 Pontos obtidos:", pontos);
       
-      // Salva a pontuação
-      saveScores();
+      // Mostrar modal de conclusão
+      onPuzzleComplete();
     } else {
       console.log("❌ Quebra-cabeça incorreto, tente novamente!");
     }
