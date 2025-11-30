@@ -96,8 +96,15 @@
 
 // Captura o código do usuário da URL e salva no localStorage
 document.addEventListener("DOMContentLoaded", function () {
-  // Pega o código da URL atual
-  let userCode = window.location.search.replace("?", "");
+  // Pega o código da URL atual (formato: ?code=AA9999)
+  const urlParams = new URLSearchParams(window.location.search);
+  let userCode = urlParams.get('code');
+  
+  // Se não tiver 'code=', tenta pegar o parâmetro direto
+  if (!userCode) {
+    userCode = window.location.search.replace("?", "");
+  }
+  
   console.log("Código capturado:", userCode);
 
   // Salva no localStorage
@@ -271,18 +278,24 @@ function submitScore() {
         .then(res => res.json())
         .then(data => {
           console.log('✅ Pontuação salva na API com sucesso:', data);
+          
+          // Fechar modal e mostrar ranking
+          closeModal();
+          showRanking();
+          
+          // Chamar saveScores para o fluxo original (que redireciona)
+          saveScores();
         })
         .catch(error => {
           console.error('❌ Erro ao salvar pontuação na API:', error);
+          
+          // Mesmo com erro, mostra o ranking local
+          closeModal();
+          showRanking();
+          
+          // Tenta salvar com o método antigo
+          saveScores();
         });
-      
-      closeModal();
-      showRanking();
-      
-      // Redireciona após 5 segundos
-      setTimeout(() => {
-        window.location.href = 'https://base-presentation-vrar.onrender.com/pages/auth';
-      }, 5000);
     })
     .catch(error => {
       console.error('❌ Erro ao buscar usuário:', error);
@@ -362,65 +375,11 @@ function selectPuzzle(index) {
 /**
  * Salva a pontuação do usuário no sistema de rank
  * Segue o padrão da API do exemplo fornecido
+ * Esta função é chamada apenas para fazer o redirecionamento final
  */
 function saveScores() {
-  console.log("💾 Salvando pontuação:", pontos);
-
-  let user = localStorage.getItem("userCode");
-
-  if (!user) {
-    console.error("❌ Código do usuário não encontrado no localStorage!");
-    return;
-  }
-
-  console.log("🔍 Buscando usuário com código:", user);
-
-  // Busca o usuário pelo código
-  fetch(
-    `https://base-presentation-vrar.onrender.com/users?code=${user}`
-  )
-    .then(async (res) => {
-      return await res.json();
-    })
-    .then((users) => {
-      if (!users || users.length === 0) {
-        console.error("❌ Usuário não encontrado com código:", user);
-        return;
-      }
-      const userData = users[0];
-      console.log("✅ Usuário encontrado:", userData);
-
-      let scoreData = {
-        userId: userData.id,
-        experienceId: 1, // ID da experiência VR Puzzle Game
-        score: pontos,
-      };
-
-      console.log("📤 Enviando pontuação:", scoreData);
-
-      // Envia a pontuação para o servidor
-      fetch(
-        `https://base-presentation-vrar.onrender.com/experienceScores`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(scoreData),
-        }
-      )
-        .then((res) => res.json())
-        .then((data) => {
-          console.log("✅ Pontuação salva com sucesso:", data);
-        })
-        .catch((error) => {
-          console.error("❌ Erro ao salvar a pontuação:", error);
-        });
-    })
-    .catch((error) => {
-      console.error("❌ Erro ao buscar usuário:", error);
-    });
-
+  console.log("🔄 Redirecionando para o dashboard...");
+  
   // Redireciona após 10 segundos
   setTimeout(() => {
     window.location.href =
