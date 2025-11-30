@@ -203,38 +203,91 @@ function onPuzzleComplete() {
 }
 
 /**
- * Salva a pontuação do usuário no ranking local
+ * Salva a pontuação do usuário no ranking local e na API
  */
 function submitScore() {
-  const playerName = document.getElementById('player-name').value.trim();
-  if (!playerName) {
-    alert('Por favor, digite seu nome!');
+  const userCode = localStorage.getItem('userCode');
+  
+  if (!userCode) {
+    alert('Código do usuário não encontrado! Por favor, acesse via link com código.');
     return;
   }
 
   const finalTime = Math.floor((Date.now() - startTime) / 1000);
-  const score = {
-    name: playerName,
-    time: finalTime,
-    date: new Date().toISOString(),
-    puzzleIndex: currentPuzzleIndex
-  };
-
-  // Salvar no localStorage
-  const rankingKey = `puzzle_ranking_${currentPuzzleIndex}`;
-  let rankings = JSON.parse(localStorage.getItem(rankingKey) || '[]');
-  rankings.push(score);
-  rankings.sort((a, b) => a.time - b.time); // Ordena por tempo crescente
-  rankings = rankings.slice(0, 10); // Mantém apenas top 10
-  localStorage.setItem(rankingKey, JSON.stringify(rankings));
-
-  console.log('💾 Pontuação salva:', score);
   
-  closeModal();
-  showRanking();
+  // Buscar dados do usuário na API
+  console.log('🔍 Buscando usuário com código:', userCode);
   
-  // Também salvar na API externa
-  saveScores();
+  fetch(`https://base-presentation-vrar.onrender.com/users?code=${userCode}`)
+    .then(res => res.json())
+    .then(users => {
+      if (!users || users.length === 0) {
+        console.error('❌ Usuário não encontrado com o código:', userCode);
+        alert('Usuário não encontrado! Verifique seu código de acesso.');
+        return;
+      }
+      
+      const user = users[0];
+      const playerName = user.name || userCode;
+      
+      console.log('✅ Usuário encontrado:', user);
+      
+      const score = {
+        name: playerName,
+        userCode: userCode,
+        time: finalTime,
+        date: new Date().toISOString(),
+        puzzleIndex: currentPuzzleIndex
+      };
+
+      // Salvar no localStorage
+      const rankingKey = `puzzle_ranking_${currentPuzzleIndex}`;
+      let rankings = JSON.parse(localStorage.getItem(rankingKey) || '[]');
+      rankings.push(score);
+      rankings.sort((a, b) => a.time - b.time); // Ordena por tempo crescente
+      rankings = rankings.slice(0, 10); // Mantém apenas top 10
+      localStorage.setItem(rankingKey, JSON.stringify(rankings));
+
+      console.log('💾 Pontuação salva localmente:', score);
+      
+      // Enviar pontuação para a API
+      const scoreData = {
+        userId: user.id,
+        experienceId: 1, // ID da experiência VR Puzzle Game
+        score: pontos,
+        time: finalTime,
+        puzzleIndex: currentPuzzleIndex
+      };
+
+      console.log('📤 Enviando pontuação para API:', scoreData);
+
+      fetch('https://base-presentation-vrar.onrender.com/experienceScores', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(scoreData),
+      })
+        .then(res => res.json())
+        .then(data => {
+          console.log('✅ Pontuação salva na API com sucesso:', data);
+        })
+        .catch(error => {
+          console.error('❌ Erro ao salvar pontuação na API:', error);
+        });
+      
+      closeModal();
+      showRanking();
+      
+      // Redireciona após 5 segundos
+      setTimeout(() => {
+        window.location.href = 'https://base-presentation-vrar.onrender.com/pages/auth';
+      }, 5000);
+    })
+    .catch(error => {
+      console.error('❌ Erro ao buscar usuário:', error);
+      alert('Erro ao conectar com o servidor. Tente novamente.');
+    });
 }
 
 /**
@@ -242,7 +295,6 @@ function submitScore() {
  */
 function closeModal() {
   document.getElementById('completion-modal').classList.remove('show');
-  document.getElementById('player-name').value = '';
 }
 
 /**
@@ -325,16 +377,21 @@ function saveScores() {
 
   // Busca o usuário pelo código
   fetch(
-    `https://base-presentation-vrar.onrender.com/users?${user}`
+    `https://base-presentation-vrar.onrender.com/users?code=${user}`
   )
     .then(async (res) => {
       return await res.json();
     })
-    .then((user) => {
-      console.log("✅ Usuário encontrado:", user);
+    .then((users) => {
+      if (!users || users.length === 0) {
+        console.error("❌ Usuário não encontrado com código:", user);
+        return;
+      }
+      const userData = users[0];
+      console.log("✅ Usuário encontrado:", userData);
 
       let scoreData = {
-        userId: user[0].id,
+        userId: userData.id,
         experienceId: 1, // ID da experiência VR Puzzle Game
         score: pontos,
       };
