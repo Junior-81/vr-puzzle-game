@@ -172,12 +172,20 @@ function startTimer() {
 }
 
 /**
- * Atualiza o display do timer
+ * Atualiza o display do timer (2D e 3D)
  */
 function updateTimer() {
   const elapsed = Math.floor((Date.now() - startTime) / 1000);
-  document.getElementById("timer-display").textContent =
-    "⏱️ " + formatTime(elapsed);
+  const formattedTime = formatTime(elapsed);
+
+  // Atualizar timer 2D
+  document.getElementById("timer-display").textContent = "⏱️ " + formattedTime;
+
+  // Atualizar timer 3D
+  const timer3D = document.querySelector("#timer-3d");
+  if (timer3D) {
+    timer3D.setAttribute("value", "⏱️ " + formattedTime);
+  }
 }
 
 /**
@@ -193,13 +201,21 @@ function stopTimer() {
 }
 
 /**
- * Reseta o timer para 00:00
+ * Reseta o timer para 00:00 (2D e 3D)
  */
 function resetTimer() {
   stopTimer();
   timerStarted = false;
   startTime = 0;
+
+  // Resetar timer 2D
   document.getElementById("timer-display").textContent = "⏱️ 00:00";
+
+  // Resetar timer 3D
+  const timer3D = document.querySelector("#timer-3d");
+  if (timer3D) {
+    timer3D.setAttribute("value", "⏱️ 00:00");
+  }
 }
 
 /**
@@ -244,28 +260,17 @@ function submitScore() {
 
       console.log("✅ Usuário encontrado:", user);
 
-      const score = {
+      console.log("📊 Dados do usuário:", {
         name: playerName,
         userCode: userCode,
         time: finalTime,
-        date: new Date().toISOString(),
         puzzleIndex: currentPuzzleIndex,
-      };
-
-      // Salvar no localStorage
-      const rankingKey = `puzzle_ranking_${currentPuzzleIndex}`;
-      let rankings = JSON.parse(localStorage.getItem(rankingKey) || "[]");
-      rankings.push(score);
-      rankings.sort((a, b) => a.time - b.time); // Ordena por tempo crescente
-      rankings = rankings.slice(0, 10); // Mantém apenas top 10
-      localStorage.setItem(rankingKey, JSON.stringify(rankings));
-
-      console.log("💾 Pontuação salva localmente:", score);
+      });
 
       // Enviar pontuação para a API
       const scoreData = {
         userId: user.id,
-        experienceId: 1, // ID da experiência VR Puzzle Game
+        experienceId: 4, // ID da experiência VR Puzzle Game
         score: pontos,
         time: finalTime,
         puzzleIndex: currentPuzzleIndex,
@@ -284,21 +289,16 @@ function submitScore() {
         .then((data) => {
           console.log("✅ Pontuação salva na API com sucesso:", data);
 
-          // Fechar modal e mostrar ranking
+          // Fechar modal e redirecionar
           closeModal();
-          showRanking();
-
-          // Chamar saveScores para o fluxo original (que redireciona)
           saveScores();
         })
         .catch((error) => {
           console.error("❌ Erro ao salvar pontuação na API:", error);
+          alert("Erro ao salvar pontuação. Você será redirecionado.");
 
-          // Mesmo com erro, mostra o ranking local
+          // Mesmo com erro, redireciona
           closeModal();
-          showRanking();
-
-          // Tenta salvar com o método antigo
           saveScores();
         });
     })
@@ -331,7 +331,7 @@ function closeRanking() {
 }
 
 /**
- * Mostra uma aba específica do ranking
+ * Mostra uma aba específica do ranking (busca da API)
  * @param {number} puzzleIndex - Índice do puzzle (0, 1 ou 2)
  */
 function showRankingTab(puzzleIndex) {
@@ -341,38 +341,49 @@ function showRankingTab(puzzleIndex) {
     tab.classList.toggle("active", index === puzzleIndex);
   });
 
-  // Carregar ranking do localStorage
-  const rankingKey = `puzzle_ranking_${puzzleIndex}`;
-  const rankings = JSON.parse(localStorage.getItem(rankingKey) || "[]");
   const rankingList = document.getElementById("ranking-list");
+  rankingList.innerHTML =
+    '<li style="text-align: center; padding: 20px; color: #999;">Carregando ranking...</li>';
 
-  if (rankings.length === 0) {
-    rankingList.innerHTML =
-      '<li style="text-align: center; padding: 20px; color: #999;">Nenhum registro ainda</li>';
-    return;
-  }
+  // Buscar ranking da API
+  fetch(
+    `https://base-presentation-vrar.onrender.com/experienceScores?experienceId=1&puzzleIndex=${puzzleIndex}&_sort=time&_order=asc&_limit=10`
+  )
+    .then((res) => res.json())
+    .then((scores) => {
+      if (scores.length === 0) {
+        rankingList.innerHTML =
+          '<li style="text-align: center; padding: 20px; color: #999;">Nenhum registro ainda</li>';
+        return;
+      }
 
-  rankingList.innerHTML = rankings
-    .map((score, index) => {
-      const topClass =
-        index === 0
-          ? "top-1"
-          : index === 1
-          ? "top-2"
-          : index === 2
-          ? "top-3"
-          : "";
-      const medal =
-        index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : "";
-      return `
-      <li class="ranking-item ${topClass}">
-        <span class="ranking-position">${medal} ${index + 1}º</span>
-        <span class="ranking-name">${score.name}</span>
-        <span class="ranking-time">${formatTime(score.time)}</span>
-      </li>
-    `;
+      rankingList.innerHTML = scores
+        .map((score, index) => {
+          const topClass =
+            index === 0
+              ? "top-1"
+              : index === 1
+              ? "top-2"
+              : index === 2
+              ? "top-3"
+              : "";
+          const medal =
+            index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : "";
+          return `
+          <li class="ranking-item ${topClass}">
+            <span class="ranking-position">${medal} ${index + 1}º</span>
+            <span class="ranking-name">Jogador ${score.userId}</span>
+            <span class="ranking-time">${formatTime(score.time)}</span>
+          </li>
+        `;
+        })
+        .join("");
     })
-    .join("");
+    .catch((error) => {
+      console.error("❌ Erro ao carregar ranking:", error);
+      rankingList.innerHTML =
+        '<li style="text-align: center; padding: 20px; color: #f44336;">Erro ao carregar ranking</li>';
+    });
 }
 
 /**
@@ -761,6 +772,16 @@ function mountPuzzleSkeleton() {
   }
 
   mountTrashBox(finalHeight);
+
+  // Posicionar cronômetro 3D acima da lixeira
+  const timer3DContainer = document.querySelector("#timer-3d-container");
+  if (timer3DContainer) {
+    timer3DContainer.setAttribute("position", {
+      x: -3,
+      y: finalHeight + 1.5,
+      z: zOffset,
+    });
+  }
 
   for (let col = 0; col < cols - 1; col++) {
     count++;

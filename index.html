@@ -310,7 +310,17 @@
       <button class="reset" onclick="resetPuzzle()">🔄 Resetar</button>
       <button class="rank" onclick="showRanking()">🏆 Ranking</button>
       <div id="timer-display">⏱️ 00:00</div>
-      <div id="user-code-display" style="margin-top: 10px; padding: 8px; background: #fff3cd; border-radius: 5px; font-size: 11px; color: #856404;">
+      <div
+        id="user-code-display"
+        style="
+          margin-top: 10px;
+          padding: 8px;
+          background: #fff3cd;
+          border-radius: 5px;
+          font-size: 11px;
+          color: #856404;
+        "
+      >
         <strong>👤 User:</strong> <span id="code-value">Carregando...</span>
       </div>
     </div>
@@ -333,10 +343,19 @@
       <div class="modal-content">
         <h2>🎉 Parabéns!</h2>
         <p>Você completou o puzzle em:</p>
-        <p style="font-size: 28px; color: #4caf50; font-weight: bold;" id="final-time">00:00</p>
-        <p style="font-size: 14px; color: #666; margin: 10px 0;">Salvando seu tempo no ranking...</p>
+        <p
+          style="font-size: 28px; color: #4caf50; font-weight: bold"
+          id="final-time"
+        >
+          00:00
+        </p>
+        <p style="font-size: 14px; color: #666; margin: 10px 0">
+          Salvando seu tempo no ranking...
+        </p>
         <div>
-          <button class="submit" onclick="submitScore()">💾 Salvar e Continuar</button>
+          <button class="submit" onclick="submitScore()">
+            💾 Salvar e Continuar
+          </button>
           <button onclick="closeModal()">❌ Fechar</button>
         </div>
       </div>
@@ -385,6 +404,25 @@
         width="5"
         rotation="30 0 0"
       ></a-text>
+
+      <!-- Cronômetro 3D -->
+      <a-entity id="timer-3d-container" position="0 5 -6">
+        <a-plane
+          width="2"
+          height="0.6"
+          color="#667eea"
+          opacity="0.9"
+          position="0 0 0"
+        ></a-plane>
+        <a-text
+          id="timer-3d"
+          value="⏱️ 00:00"
+          color="#FFFFFF"
+          align="center"
+          position="0 0 0.01"
+          width="4"
+        ></a-text>
+      </a-entity>
 
       <a-entity camera wasd-controls look-controls position="0 1.6 0">
         <a-plane
