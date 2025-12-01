@@ -145,6 +145,21 @@ let timerStarted = false;
 let startTime = 0;
 let timerInterval = null;
 let currentPuzzleIndex = 0;
+let finalTime = 0; // tempo final em segundos ao concluir
+
+/**
+ * Calcula pontuação dinâmica baseada no tempo decorrido.
+ * Quanto mais rápido, maior o score.
+ * Fórmula: (totalPieces * 1000) / (elapsedSeconds + 1)
+ * Retorna com duas casas decimais.
+ * @param {number} elapsedSeconds
+ * @returns {number}
+ */
+function calculateScore(elapsedSeconds) {
+  const base = totalPieces * 1000;
+  const raw = base / (elapsedSeconds + 1);
+  return parseFloat(raw.toFixed(2));
+}
 
 /**
  * Formata segundos em MM:SS
@@ -222,7 +237,7 @@ function resetTimer() {
  * Chamado quando o puzzle é completado
  */
 function onPuzzleComplete() {
-  const finalTime = stopTimer();
+  finalTime = stopTimer();
   document.getElementById("final-time").textContent = formatTime(finalTime);
   document.getElementById("completion-modal").classList.add("show");
   console.log("🎉 Puzzle completo em " + formatTime(finalTime));
@@ -240,8 +255,6 @@ function submitScore() {
     );
     return;
   }
-
-  const finalTime = Math.floor((Date.now() - startTime) / 1000);
 
   // Buscar dados do usuário na API
   console.log("🔍 Buscando usuário com código:", userCode);
@@ -268,10 +281,17 @@ function submitScore() {
       });
 
       // Enviar pontuação para a API
+      // Garantir cálculo de score dinâmico (se não definido ainda)
+      if (!pontos || pontos === 0) {
+        const elapsedFallback =
+          finalTime || Math.floor((Date.now() - startTime) / 1000);
+        pontos = calculateScore(elapsedFallback);
+      }
+
       const scoreData = {
         userId: user.id,
         experienceId: 4, // ID da experiência VR Puzzle Game
-        score: pontos,
+        score: parseFloat(pontos.toFixed(2)),
         time: finalTime,
         puzzleIndex: currentPuzzleIndex,
       };
@@ -1308,10 +1328,10 @@ function movePieceToPosition(pieceElement, skeletonPosition, skeletonName) {
 
     if (isValid) {
       console.log("🎉 Parabéns! Você completou o quebra-cabeça!");
-
-      // Calcula pontos baseado no número de peças (100 pontos por peça)
-      pontos = totalPieces * 100;
-      console.log("🏆 Pontos obtidos:", pontos);
+      // Calcula pontos dinamicamente baseado no tempo decorrido
+      const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+      pontos = calculateScore(elapsedSeconds);
+      console.log("🏆 Pontos obtidos (dinâmico):", pontos);
 
       // Mostrar modal de conclusão
       onPuzzleComplete();
