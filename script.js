@@ -98,13 +98,13 @@
 document.addEventListener("DOMContentLoaded", function () {
   // Pega o código da URL atual (formato: ?code=AA9999)
   const urlParams = new URLSearchParams(window.location.search);
-  let userCode = urlParams.get('code');
-  
+  let userCode = urlParams.get("code");
+
   // Se não tiver 'code=', tenta pegar o parâmetro direto
   if (!userCode) {
     userCode = window.location.search.replace("?", "");
   }
-  
+
   console.log("Código capturado:", userCode);
 
   // Salva no localStorage
@@ -112,7 +112,7 @@ document.addEventListener("DOMContentLoaded", function () {
     localStorage.setItem("userCode", userCode);
     console.log("✅ Código do usuário salvo:", userCode);
   }
-  
+
   // Atualizar o display do código na interface
   updateUserCodeDisplay();
 });
@@ -123,7 +123,7 @@ document.addEventListener("DOMContentLoaded", function () {
 function updateUserCodeDisplay() {
   const codeDisplay = document.getElementById("code-value");
   const userCode = localStorage.getItem("userCode");
-  
+
   if (codeDisplay) {
     if (userCode) {
       codeDisplay.textContent = userCode;
@@ -154,7 +154,9 @@ let currentPuzzleIndex = 0;
 function formatTime(seconds) {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
-  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  return `${mins.toString().padStart(2, "0")}:${secs
+    .toString()
+    .padStart(2, "0")}`;
 }
 
 /**
@@ -165,7 +167,7 @@ function startTimer() {
     timerStarted = true;
     startTime = Date.now();
     timerInterval = setInterval(updateTimer, 1000);
-    console.log('⏱️ Timer iniciado!');
+    console.log("⏱️ Timer iniciado!");
   }
 }
 
@@ -174,7 +176,8 @@ function startTimer() {
  */
 function updateTimer() {
   const elapsed = Math.floor((Date.now() - startTime) / 1000);
-  document.getElementById('timer-display').textContent = '⏱️ ' + formatTime(elapsed);
+  document.getElementById("timer-display").textContent =
+    "⏱️ " + formatTime(elapsed);
 }
 
 /**
@@ -196,7 +199,7 @@ function resetTimer() {
   stopTimer();
   timerStarted = false;
   startTime = 0;
-  document.getElementById('timer-display').textContent = '⏱️ 00:00';
+  document.getElementById("timer-display").textContent = "⏱️ 00:00";
 }
 
 /**
@@ -204,102 +207,104 @@ function resetTimer() {
  */
 function onPuzzleComplete() {
   const finalTime = stopTimer();
-  document.getElementById('final-time').textContent = formatTime(finalTime);
-  document.getElementById('completion-modal').classList.add('show');
-  console.log('🎉 Puzzle completo em ' + formatTime(finalTime));
+  document.getElementById("final-time").textContent = formatTime(finalTime);
+  document.getElementById("completion-modal").classList.add("show");
+  console.log("🎉 Puzzle completo em " + formatTime(finalTime));
 }
 
 /**
  * Salva a pontuação do usuário no ranking local e na API
  */
 function submitScore() {
-  const userCode = localStorage.getItem('userCode');
-  
+  const userCode = localStorage.getItem("userCode");
+
   if (!userCode) {
-    alert('Código do usuário não encontrado! Por favor, acesse via link com código.');
+    alert(
+      "Código do usuário não encontrado! Por favor, acesse via link com código."
+    );
     return;
   }
 
   const finalTime = Math.floor((Date.now() - startTime) / 1000);
-  
+
   // Buscar dados do usuário na API
-  console.log('🔍 Buscando usuário com código:', userCode);
-  
+  console.log("🔍 Buscando usuário com código:", userCode);
+
   fetch(`https://base-presentation-vrar.onrender.com/users?code=${userCode}`)
-    .then(res => res.json())
-    .then(users => {
+    .then((res) => res.json())
+    .then((users) => {
       if (!users || users.length === 0) {
-        console.error('❌ Usuário não encontrado com o código:', userCode);
-        alert('Usuário não encontrado! Verifique seu código de acesso.');
+        console.error("❌ Usuário não encontrado com o código:", userCode);
+        alert("Usuário não encontrado! Verifique seu código de acesso.");
         return;
       }
-      
+
       const user = users[0];
       const playerName = user.name || userCode;
-      
-      console.log('✅ Usuário encontrado:', user);
-      
+
+      console.log("✅ Usuário encontrado:", user);
+
       const score = {
         name: playerName,
         userCode: userCode,
         time: finalTime,
         date: new Date().toISOString(),
-        puzzleIndex: currentPuzzleIndex
+        puzzleIndex: currentPuzzleIndex,
       };
 
       // Salvar no localStorage
       const rankingKey = `puzzle_ranking_${currentPuzzleIndex}`;
-      let rankings = JSON.parse(localStorage.getItem(rankingKey) || '[]');
+      let rankings = JSON.parse(localStorage.getItem(rankingKey) || "[]");
       rankings.push(score);
       rankings.sort((a, b) => a.time - b.time); // Ordena por tempo crescente
       rankings = rankings.slice(0, 10); // Mantém apenas top 10
       localStorage.setItem(rankingKey, JSON.stringify(rankings));
 
-      console.log('💾 Pontuação salva localmente:', score);
-      
+      console.log("💾 Pontuação salva localmente:", score);
+
       // Enviar pontuação para a API
       const scoreData = {
         userId: user.id,
         experienceId: 1, // ID da experiência VR Puzzle Game
         score: pontos,
         time: finalTime,
-        puzzleIndex: currentPuzzleIndex
+        puzzleIndex: currentPuzzleIndex,
       };
 
-      console.log('📤 Enviando pontuação para API:', scoreData);
+      console.log("📤 Enviando pontuação para API:", scoreData);
 
-      fetch('https://base-presentation-vrar.onrender.com/experienceScores', {
-        method: 'POST',
+      fetch("https://base-presentation-vrar.onrender.com/experienceScores", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(scoreData),
       })
-        .then(res => res.json())
-        .then(data => {
-          console.log('✅ Pontuação salva na API com sucesso:', data);
-          
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("✅ Pontuação salva na API com sucesso:", data);
+
           // Fechar modal e mostrar ranking
           closeModal();
           showRanking();
-          
+
           // Chamar saveScores para o fluxo original (que redireciona)
           saveScores();
         })
-        .catch(error => {
-          console.error('❌ Erro ao salvar pontuação na API:', error);
-          
+        .catch((error) => {
+          console.error("❌ Erro ao salvar pontuação na API:", error);
+
           // Mesmo com erro, mostra o ranking local
           closeModal();
           showRanking();
-          
+
           // Tenta salvar com o método antigo
           saveScores();
         });
     })
-    .catch(error => {
-      console.error('❌ Erro ao buscar usuário:', error);
-      alert('Erro ao conectar com o servidor. Tente novamente.');
+    .catch((error) => {
+      console.error("❌ Erro ao buscar usuário:", error);
+      alert("Erro ao conectar com o servidor. Tente novamente.");
     });
 }
 
@@ -307,14 +312,14 @@ function submitScore() {
  * Fecha o modal de conclusão
  */
 function closeModal() {
-  document.getElementById('completion-modal').classList.remove('show');
+  document.getElementById("completion-modal").classList.remove("show");
 }
 
 /**
  * Mostra o modal de ranking
  */
 function showRanking() {
-  document.getElementById('ranking-modal').classList.add('show');
+  document.getElementById("ranking-modal").classList.add("show");
   showRankingTab(currentPuzzleIndex);
 }
 
@@ -322,7 +327,7 @@ function showRanking() {
  * Fecha o modal de ranking
  */
 function closeRanking() {
-  document.getElementById('ranking-modal').classList.remove('show');
+  document.getElementById("ranking-modal").classList.remove("show");
 }
 
 /**
@@ -331,32 +336,43 @@ function closeRanking() {
  */
 function showRankingTab(puzzleIndex) {
   // Atualizar tabs ativos
-  const tabs = document.querySelectorAll('.ranking-tabs button');
+  const tabs = document.querySelectorAll(".ranking-tabs button");
   tabs.forEach((tab, index) => {
-    tab.classList.toggle('active', index === puzzleIndex);
+    tab.classList.toggle("active", index === puzzleIndex);
   });
 
   // Carregar ranking do localStorage
   const rankingKey = `puzzle_ranking_${puzzleIndex}`;
-  const rankings = JSON.parse(localStorage.getItem(rankingKey) || '[]');
-  const rankingList = document.getElementById('ranking-list');
-  
+  const rankings = JSON.parse(localStorage.getItem(rankingKey) || "[]");
+  const rankingList = document.getElementById("ranking-list");
+
   if (rankings.length === 0) {
-    rankingList.innerHTML = '<li style="text-align: center; padding: 20px; color: #999;">Nenhum registro ainda</li>';
+    rankingList.innerHTML =
+      '<li style="text-align: center; padding: 20px; color: #999;">Nenhum registro ainda</li>';
     return;
   }
 
-  rankingList.innerHTML = rankings.map((score, index) => {
-    const topClass = index === 0 ? 'top-1' : index === 1 ? 'top-2' : index === 2 ? 'top-3' : '';
-    const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
-    return `
+  rankingList.innerHTML = rankings
+    .map((score, index) => {
+      const topClass =
+        index === 0
+          ? "top-1"
+          : index === 1
+          ? "top-2"
+          : index === 2
+          ? "top-3"
+          : "";
+      const medal =
+        index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : "";
+      return `
       <li class="ranking-item ${topClass}">
         <span class="ranking-position">${medal} ${index + 1}º</span>
         <span class="ranking-name">${score.name}</span>
         <span class="ranking-time">${formatTime(score.time)}</span>
       </li>
     `;
-  }).join('');
+    })
+    .join("");
 }
 
 /**
@@ -379,7 +395,7 @@ function selectPuzzle(index) {
  */
 function saveScores() {
   console.log("🔄 Redirecionando para o dashboard...");
-  
+
   // Redireciona após 10 segundos
   setTimeout(() => {
     window.location.href =
@@ -945,20 +961,44 @@ function createShape(borderShapes, row = 0, col = 0) {
   };
   const geometry = new THREE.ExtrudeGeometry(pieceShape, extrudeSettings);
 
-  // Aplicar UV mapping FIXO para esta peça (recorta a parte correta da imagem)
+  // Garantir grupos de materiais (frente, laterais, trás)
+  if (!geometry.groups || geometry.groups.length === 0) {
+    const shapePoints = pieceShape.extractPoints().shape;
+    const trianglesFront = THREE.ShapeUtils.triangulateShape(shapePoints, []);
+    const frontCount = trianglesFront.length * 3;
+    const backCount = frontCount;
+    const totalVertices = geometry.attributes.position.count;
+    const sideCount = totalVertices - frontCount - backCount;
+
+    geometry.clearGroups();
+    geometry.addGroup(0, frontCount, 0); // frente com textura
+    geometry.addGroup(frontCount, sideCount, 1); // laterais coloridas
+    geometry.addGroup(frontCount + sideCount, backCount, 2); // trás
+  }
+
+  // Aplicar UV mapping global para esta peça
   applyUVMapping(geometry, row, col);
 
-  // Material com textura (se disponível) ou cor padrão
-  // Usar cor branca (0xffffff) para não tingir a textura
-  const material = new THREE.MeshStandardMaterial({
-    color: currentTexture ? 0xffffff : 0x156289,
+  // Criar materiais diferentes para cada grupo
+  const materialFront = new THREE.MeshStandardMaterial({
     map: currentTexture || null,
-    side: THREE.DoubleSide,
+    color: currentTexture ? 0xffffff : 0x156289,
     metalness: 0.1,
     roughness: 0.8,
   });
 
-  const mesh = new THREE.Mesh(geometry, material);
+  const materialSide = new THREE.MeshStandardMaterial({
+    color: 0x156289,
+    flatShading: true,
+  });
+
+  const materialBack = new THREE.MeshStandardMaterial({
+    color: 0x333333,
+    flatShading: true,
+  });
+
+  const materials = [materialFront, materialSide, materialBack];
+  const mesh = new THREE.Mesh(geometry, materials);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
 
@@ -967,71 +1007,55 @@ function createShape(borderShapes, row = 0, col = 0) {
 
 /**
  * Aplica mapeamento UV para dividir a textura entre as peças
- * IMPORTANTE: Recorta a imagem corretamente para cada peça
- * Cada peça mostra apenas sua parte da imagem baseada em row/col
+ * IMPORTANTE: Usa coordenadas globais do puzzle para mapeamento correto
+ * incluindo protrusões e reentrâncias
  * @param {THREE.ExtrudeGeometry} geometry - Geometria da peça
  * @param {number} row - Linha da peça no grid
  * @param {number} col - Coluna da peça no grid
  */
 function applyUVMapping(geometry, row, col) {
   const positionAttribute = geometry.getAttribute("position");
-  const uvAttribute = geometry.getAttribute("uv");
+  let uvAttribute = geometry.getAttribute("uv");
 
-  if (!uvAttribute || !positionAttribute) {
-    console.warn("Atributos UV ou position não encontrados");
+  if (!positionAttribute) {
+    console.warn("❌ Atributo de posição não encontrado");
     return;
   }
 
-  // Calcular bounding box para normalizar coordenadas
-  geometry.computeBoundingBox();
-  const bb = geometry.boundingBox;
+  // Criar atributo UV se não existir
+  if (!uvAttribute) {
+    const uvArray = new Float32Array(positionAttribute.count * 2);
+    geometry.setAttribute("uv", new THREE.BufferAttribute(uvArray, 2));
+    uvAttribute = geometry.attributes.uv;
+  }
 
-  const width = bb.max.x - bb.min.x;
-  const height = bb.max.y - bb.min.y;
+  // Tamanho total do puzzle (grid completo)
+  const totalPuzzleSize = rows * pieceSize;
 
-  // Calcular o recorte UV baseado na posição da peça no grid
-  const u0 = col / cols;
-  const u1 = (col + 1) / cols;
-
-  // CORREÇÃO: INVERTER V para corrigir orientação (texturas de cabeça para baixo)
-  const v0 = 1.0 - (row + 1) / rows;
-  const v1 = 1.0 - row / rows;
-
-  console.log(
-    `UV peça [${row}, ${col}] → U:[${u0.toFixed(3)}, ${u1.toFixed(
-      3
-    )}] V:[${v0.toFixed(3)}, ${v1.toFixed(3)}]`
-  );
-
-  // Aplicar UV apenas nos vértices da face frontal (z = pieceDepth)
+  // Mapear COORDENADAS GLOBAIS para UV
+  // Cada vértice local da peça é convertido em coordenada global do puzzle
   for (let i = 0; i < positionAttribute.count; i++) {
-    const x = positionAttribute.getX(i);
-    const y = positionAttribute.getY(i);
-    const z = positionAttribute.getZ(i);
+    const xLocal = positionAttribute.getX(i);
+    const yLocal = positionAttribute.getY(i);
 
-    // Apenas face frontal (z = pieceDepth, com pequena tolerância)
-    if (Math.abs(z - pieceDepth) < 0.001) {
-      // Normalizar coordenadas x,y para 0-1 dentro da bounding box
-      const normalizedX = (x - bb.min.x) / width;
-      const normalizedY = 1.0 - (y - bb.min.y) / height; // INVERTER Y aqui
+    // Converter para coordenada global do puzzle
+    const globalX = col * pieceSize + xLocal;
+    const globalY = row * pieceSize + yLocal;
 
-      // Aplicar offset do recorte UV desta peça
-      const finalU = u0 + normalizedX * (u1 - u0);
-      const finalV = v0 + normalizedY * (v1 - v0);
+    // Normalizar para UV (0 a 1)
+    const u = globalX / totalPuzzleSize;
+    // INVERTER V para corrigir orientação (row 0 deve estar no topo da imagem)
+    const v = 1.0 - globalY / totalPuzzleSize;
 
-      uvAttribute.setXY(i, finalU, finalV);
-    } else {
-      // Laterais e face traseira: UV neutro (cinza ou cor sólida)
-      uvAttribute.setXY(i, 0, 0);
-    }
+    uvAttribute.setXY(i, u, v);
   }
 
   uvAttribute.needsUpdate = true;
 
   console.log(
-    `UV aplicado: peça [${row}, ${col}] → U:[${u0.toFixed(3)}, ${u1.toFixed(
-      3
-    )}] V:[${v0.toFixed(3)}, ${v1.toFixed(3)}]`
+    `✅ UV global aplicado: peça [${row}, ${col}] → tamanho total: ${totalPuzzleSize.toFixed(
+      2
+    )}`
   );
 }
 
@@ -1186,7 +1210,7 @@ function checkPuzzleCompletion() {
 function movePieceToPosition(pieceElement, skeletonPosition, skeletonName) {
   // Iniciar o timer na primeira jogada
   startTimer();
-  
+
   const skeleton = skeletonName.split("-");
   const skeletonType = skeleton[0];
   const mountedArrayIndex = skeleton[1] - 1;
@@ -1263,11 +1287,11 @@ function movePieceToPosition(pieceElement, skeletonPosition, skeletonName) {
 
     if (isValid) {
       console.log("🎉 Parabéns! Você completou o quebra-cabeça!");
-      
+
       // Calcula pontos baseado no número de peças (100 pontos por peça)
       pontos = totalPieces * 100;
       console.log("🏆 Pontos obtidos:", pontos);
-      
+
       // Mostrar modal de conclusão
       onPuzzleComplete();
     } else {
