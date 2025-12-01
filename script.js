@@ -1472,8 +1472,8 @@ AFRAME.registerComponent("puzzle-component", {
     const timeoutDuration = piecesUserMounted.find(
       (piece) => piece?.name === this.data
     )
-      ? 1500
-      : 1500;
+      ? 500
+      : 750;
 
     cursor.setAttribute("animation__fill", {
       property: "geometry.radiusInner",
