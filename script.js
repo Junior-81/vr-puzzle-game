@@ -238,9 +238,22 @@ function resetTimer() {
  */
 function onPuzzleComplete() {
   finalTime = stopTimer();
-  document.getElementById("final-time").textContent = formatTime(finalTime);
+  const timeFormatted = formatTime(finalTime);
+  
+  // Atualizar modal 2D
+  document.getElementById("final-time").textContent = timeFormatted;
   document.getElementById("completion-modal").classList.add("show");
-  console.log("🎉 Puzzle completo em " + formatTime(finalTime));
+  
+  // Atualizar e mostrar modal 3D (VR)
+  const modal3D = document.querySelector("#completion-modal-3d");
+  const finalTime3D = document.querySelector("#final-time-3d");
+  
+  if (modal3D && finalTime3D) {
+    finalTime3D.setAttribute("value", `Tempo: ${timeFormatted}`);
+    modal3D.setAttribute("visible", "true");
+  }
+  
+  console.log("🎉 Puzzle completo em " + timeFormatted);
 }
 
 /**
@@ -329,10 +342,16 @@ function submitScore() {
 }
 
 /**
- * Fecha o modal de conclusão
+ * Fecha o modal de conclusão (2D e 3D)
  */
 function closeModal() {
   document.getElementById("completion-modal").classList.remove("show");
+  
+  // Fechar modal 3D também
+  const modal3D = document.querySelector("#completion-modal-3d");
+  if (modal3D) {
+    modal3D.setAttribute("visible", "false");
+  }
 }
 
 /**
@@ -1514,6 +1533,17 @@ AFRAME.registerComponent("puzzle-component", {
   handleMouseClick: function () {
     const currentPosition = this.el.getAttribute("position");
     const prefixName = this.data.split("-")[0];
+
+    // Tratar cliques nos botões do modal 3D
+    if (this.data === "btn-submit-3d") {
+      submitScore();
+      return;
+    }
+    
+    if (this.data === "btn-close-3d") {
+      closeModal();
+      return;
+    }
 
     // Se R está pressionado e é uma peça, rotacionar
     if (isRotateKeyPressed && prefixName === "piece") {

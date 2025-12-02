@@ -1,6 +1,26 @@
-## Quebra‑cabeça 3D em RA/VR com A‑Frame + Three.js
+# Quebra‑cabeça 3D em RA/VR com A‑Frame + Three.js
 
-Projeto de um quebra‑cabeça 3D interativo em realidade aumentada/virtual (A‑Frame) que gera peças com lados que se encaixam, embaralha, permite selecionar e mover as peças, valida encaixes e verifica a conclusão do jogo.
+**Grupo Responsável:**
+- Eduardo Silva
+- Ricardo Lyra
+- José Ailton
+
+---
+
+## Sobre o Projeto
+
+Projeto de um quebra‑cabeça 3D interativo em realidade aumentada/virtual desenvolvido com A‑Frame e Three.js. O sistema gera peças com lados que se encaixam automaticamente, embaralha as posições, permite selecionar e mover peças através de gaze interaction, valida encaixes em tempo real e verifica a conclusão do jogo.
+
+### Principais Funcionalidades
+
+- **Geração Procedural de Peças**: Algoritmo que cria peças compatíveis automaticamente
+- **Sistema de Embaralhamento**: Fisher-Yates para distribuição aleatória
+- **Gaze Interaction**: Seleção por foco do olhar (ideal para VR/AR)
+- **Validação em Tempo Real**: Verifica encaixes antes de posicionar
+- **Sistema de Timer e Ranking**: Competição por melhor tempo
+- **Texturas Dinâmicas**: Troca de imagens do puzzle
+- **Área de Descarte**: Lixeira para reposicionar peças
+- **Modal 3D**: Interface VR-friendly para conclusão do jogo
 
 Arquivos principais:
 - `index.html`: cena A‑Frame, câmera, cursor e HUD de erro.
